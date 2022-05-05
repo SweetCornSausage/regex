@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Blockly</title>
+        <script src="./blockly.min.js"></script>
+        <script src="./xregexp-all.js"></script>
+        <script src="./FileSaver.min.js"></script>
+        <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                background-color: #fff;
+                font-family: sans-serif;
+                overflow: hidden;
+            }
+            table {
+                height: 100%;
+                width: 100%;
+            }
+            textarea {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                resize: none;
+            }
+            #blocklyArea {
+                height: 99%;
+                width: 70%;
+                text-align: center;
+            }
+            #blocklyArea2 {
+                height: 99%;
+                width: 30%;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <td>
+                    <span>regexExpress: </span>
+                    <input type="text" name="regexExpress" id="regexExpress" />
+                    <button id="btn_b2r">Blocks to Regex</button>
+                    <script>
+                        document.getElementById("btn_b2r").addEventListener(
+                            "click",
+                            function () {
+                                document.getElementById("regexExpress").value =
+                                    regexGenerator.workspaceToCode(workspace);
+                            },
+                            false
+                        );
+                    </script>
+                    <!-- <button id="btn_b2x">Blocks to Xml</button>
+                    <script>
+                        document.getElementById("btn_b2x").addEventListener(
+                            "click",
+                            function () {
+                                var xml = Blockly.Xml.workspaceToDom(workspace);
+                                // var xml =
+                                //     Blockly.Xml.workspaceToDom(test_workspace);
+                                var text = Blockly.Xml.domToText(xml);
+                                document.getElementById("xmlArea").value = text;
+                            },
+                            false
+                        );
+                    </script> -->
+                    <!-- <button id="btn_x2b">Xml to Blocks</button>
+                    <script>
+                        document.getElementById("btn_x2b").addEventListener(
+                            "click",
+                            function () {
+                                var text =
+                                    document.getElementById("xmlArea").value;
+                                var xml_workspace = Blockly.Xml.textToDom(text);
+                                Blockly.Xml.clearWorkspaceAndLoadFromXml(
+                                    xml_workspace,
+                                    workspace
+                                );
+                            },
+                            false
+                        );
+                    </script> -->
+                    <button id="btn_r2b">Regex to Blocks</button>
+                    <script>
+                        document.getElementById("btn_r2b").addEventListener(
+                            "click",
+                            function () {
+                                var regex =
+                                    document.getElementById(
+                                        "regexExpress"
+                                    ).value;
+                                test_workspace.clear();
+                                var xml_test = constructor(
+                                    test_workspace,
+                                    seg(regex)
+                                );
+                                var xml_workspace =
+                                    Blockly.Xml.workspaceToDom(test_workspace);
+                                // var xml_text =
+                                //     Blockly.Xml.domToText(xml_workspace);
+                                Blockly.Xml.clearWorkspaceAndLoadFromXml(
+                                    xml_workspace,
+                                    workspace
+                                );
+                            },
+                            false
+                        );
+                    </script>
+                    <button id="btn_test">Match</button>
+                    <script>
+                        document.getElementById("btn_test").addEventListener(
+                            "click",
+                            function () {
+                                var regex =
+                                    document.getElementById(
+                                        "regexExpress"
+                                    ).value;
+                                var str_test =
+                                    document.getElementById("testText").value;
+                                var str_result = result_constructor(
+                                    test_workspace2,
+                                    regex,
+                                    str_test
+                                );
+                                var xml_workspace =
+                                    Blockly.Xml.workspaceToDom(test_workspace2);
+                                // var xml_text =
+                                //     Blockly.Xml.domToText(xml_workspace);
+                                Blockly.Xml.clearWorkspaceAndLoadFromXml(
+                                    xml_workspace,
+                                    workspace2
+                                );
+                                var colour = 230;
+                                var totals =
+                                    workspace2.getBlocksByType(
+                                        "block_result_total"
+                                    );
+                                totals.forEach((x) => {
+                                    x.setColour(colour);
+                                    colour = (colour + 60) % 360;
+                                });
+                            },
+                            false
+                        );
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="btn_trashcan">Empty Trashcan</button>
+                    <script>
+                        document
+                            .getElementById("btn_trashcan")
+                            .addEventListener(
+                                "click",
+                                function () {
+                                    workspace.trashcan.emptyContents();
+                                },
+                                false
+                            );
+                    </script>
+                    <button id="btn_export">Export</button>
+                    <script>
+                        document.getElementById("btn_export").addEventListener(
+                            "click",
+                            function () {
+                                var xml_text = Blockly.Xml.domToText(
+                                    Blockly.Xml.workspaceToDom(workspace)
+                                ).replace(/\sid="[^"]+"([^>]+?)?(?=>)/g, "");
+                                var blob = new Blob([xml_text], {
+                                    type: "text/plain;charset=utf-8",
+                                });
+                                var file_name = prompt(
+                                    "请输入导出文件名：",
+                                    "export"
+                                );
+                                if (file_name != null && file_name != "") {
+                                    saveAs(blob, file_name + ".xml");
+                                }
+                            },
+                            false
+                        );
+                    </script>
+                    <input type="file" id="input_file" />
+                    <button id="btn_load">Load</button>
+                    <script>
+                        document.getElementById("btn_load").addEventListener(
+                            "click",
+                            function () {
+                                var files =
+                                    document.getElementById("input_file").files;
+                                if (files.length == 0) {
+                                    alert("请选择文件");
+                                } else {
+                                    var reader = new FileReader();
+                                    reader.readAsText(files[0], "UTF-8");
+                                    reader.onload = function (evt) {
+                                        var fileString = evt.target.result;
+                                        Blockly.Xml.clearWorkspaceAndLoadFromXml(
+                                            Blockly.Xml.textToDom(fileString),
+                                            workspace
+                                        );
+                                    };
+                                }
+                            },
+                            false
+                        );
+                    </script>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span>测试文本:</span
+                    ><textarea name="testText" id="testText"></textarea>
+                    <!-- <textarea name="testResult" id="testResult"></textarea> -->
+                </td>
+            </tr>
+            <tr>
+                <td id="blocklyArea"></td>
+                <td id="blocklyArea2"></td>
+            </tr>
+        </table>
+        <div id="blocklyDiv" style="position: absolute"></div>
+        <div id="blocklyDiv2" style="position: absolute"></div>
+        <xml
+            xmlns="https://developers.google.com/blockly/xml"
+            id="toolbox"
+            style="display: none"
+        >
+            <category name="结构">
+                <block type="block_group_capture">
+                    <field name="is_index">FALSE</field>
+                    <field name="index">test</field>
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+                <block type="block_group_nocapture">
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+                <block type="block_group_captured">
+                    <field name="is_index">FALSE</field>
+                    <field name="index">test</field>
+                </block>
+                <block type="block_or"></block>
+                <block type="block_assert">
+                    <field name="is_ahead">ahead</field>
+                    <field name="is_positive">positive</field>
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="字符">
+                <block type="block_real_strings">
+                    <field name="string">abc</field>
+                </block>
+                <block type="block_real_string">
+                    <field name="string">a</field>
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+                <block type="block_real_string_meta">
+                    <field name="meta_char">meta_any</field>
+                    <field name="meta_string">\</field>
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+                <block type="block_real_char">
+                    <field name="is_include">include</field>
+                    <value name="freq">
+                        <shadow type="block_freq_1"></shadow>
+                    </value>
+                </block>
+            </category>
+            <category name="范围">
+                <block type="block_real_char_s">
+                    <field name="string">aeiou</field>
+                </block>
+                <block type="block_real_char_range">
+                    <field name="first_char">a</field>
+                    <field name="last_char">z</field>
+                </block>
+                <block type="block_real_char_meta">
+                    <field name="meta_char">meta_d</field>
+                    <field name="meta_string">\</field>
+                </block>
+            </category>
+            <category name="频次">
+                <block type="block_freq_1"></block>
+                <block type="block_freq_01">
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_0n">
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_1n">
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_exact_n">
+                    <field name="exact_n">1</field>
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_exact_min">
+                    <field name="exact_min">1</field>
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_exact_max">
+                    <field name="exact_max">1</field>
+                    <field name="is_greedy">greedy</field>
+                </block>
+                <block type="block_freq_exact_range">
+                    <field name="exact_min">0</field>
+                    <field name="exact_max">1</field>
+                    <field name="is_greedy">greedy</field>
+                </block>
+            </category>
+            <category name="锚点">
+                <block type="block_anchor_start"></block>
+                <block type="block_anchor_end"></block>
+                <block type="block_anchor_word">
+                    <field name="is_word">word</field>
+                </block>
+            </category>
+        </xml>
+        <xml
+            xmlns="https://developers.google.com/blockly/xml"
+            id="toolbox2"
+            style="display: none"
+        >
+        </xml>
+        <script src="./workspace.js"></script>
+        <script src="./regex_blocks_definition.js"></script>
+        <script src="./or_mutator.js"></script>
+        <script src="./regex_generator.js"></script>
+        <script src="./regex_constructor.js"></script>
+        <script src="./result_constructor.js"></script>
+    </body>
+</html>

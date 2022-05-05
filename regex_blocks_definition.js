@@ -23,7 +23,7 @@ Blockly.defineBlocksWithJsonArray([
                 check: "Main",
             },
         ],
-        previousStatement: "OR1",
+        previousStatement: "OR",
         nextStatement: "OR2",
         colour: 270,
         tooltip: "",

@@ -175,7 +175,8 @@
                             function () {
                                 var xml_text = Blockly.Xml.domToText(
                                     Blockly.Xml.workspaceToDom(workspace)
-                                ).replace(/\sid="[^"]+"([^>]+?)?(?=>)/g, "");
+                                );
+                                //.replace(/\sid="[^"]+"([^>]+?)?(?=>)/g, "");
                                 var blob = new Blob([xml_text], {
                                     type: "text/plain;charset=utf-8",
                                 });
